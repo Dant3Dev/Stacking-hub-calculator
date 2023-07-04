@@ -150,7 +150,7 @@ const displayGrowthUdtPercent = document.querySelector(
 let years = [year1.value, year2.value, year3.value, year4.value, year5.value];
 
 const updateValues = () => {
-  const nftValue = 5000;
+  const nftValue = 30000;
   const usdt = 0.1;
   const ulx = 0.1;
   const baseStake = nftValue / ulx;
@@ -163,10 +163,36 @@ const updateValues = () => {
     years[3] * 0.00025 +
     years[4] * 0.000125;
 
-  let growthUlx = (baseStake + (nftValue * 0.02 * totalDays)).toFixed(2);
-  let growthUlxPercentage = ((growthUlx / baseStake - 1) * 100).toFixed(2);
+  let growthUlx = (baseStake, totalDays) => {
+    const years = Math.floor(totalDays / 365);
+    const multipliers = [0.002, 0.001, 0.0005, 0.00025, 0.000125].slice(
+      0,
+      years + 1
+    );
+    let sum = baseStake;
 
-  displayGrowthUlx.textContent = growthUlx;
+    for (let year = 1; year <= years; year++) {
+      for (let day = 1; day <= 365; day++) {
+        sum += sum * multipliers[year - 1];
+      }
+    }
+
+    if (totalDays % 365 !== 0) {
+      const remainingDays = totalDays % 365;
+      for (let day = 1; day <= remainingDays; day++) {
+        sum += sum * multipliers[years];
+      }
+    }
+    console.log(sum.toFixed(2));
+    return sum.toFixed(2);
+  };
+
+  let growthUlxPercentage = (
+    (growthUlx(baseStake, totalDays) / baseStake - 1) *
+    100
+  ).toFixed(2);
+
+  displayGrowthUlx.textContent = growthUlx(baseStake, totalDays);
   displayGrowthUlxPercent.textContent = growthUlxPercentage;
 };
 
