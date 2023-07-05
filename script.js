@@ -32,31 +32,7 @@ addEventListener("DOMContentLoaded", () => {
   // startPrice.addEventListener('input', () => {
   //     validateInput(startPrice);
   // });
-  var nav = document.querySelector(".calculator__dropdown__list");
 
-  // Get the div children of the nav element
-  var divs = nav.getElementsByTagName("div");
-
-  for (var i = 0; i < divs.length; i++) {
-    divs[i].addEventListener("click", function () {
-      // Get the value of the selected div
-      var selectedValue = this.getAttribute("data-value");
-
-      // Change the variable value based on the selected option
-      var myVariable;
-
-      if (selectedValue === "option1") {
-        myVariable = "Value for Option 1";
-      } else if (selectedValue === "option2") {
-        myVariable = "Value for Option 2";
-      } else if (selectedValue === "option3") {
-        myVariable = "Value for Option 3";
-      }
-
-      // Do something with the updated variable value
-      console.log(myVariable);
-    });
-  }
   ///////////////////////////////////
 
   const curveData = [
@@ -159,7 +135,7 @@ let years = [
 let nftValue = 5000;
 const usdt = 0.1;
 const ulx = 0.1;
-const baseStake = nftValue / ulx;
+let baseStake = nftValue / ulx;
 
 // Function to calculate total growth.
 let calculateGrowth = (baseStake, years) => {
@@ -223,3 +199,19 @@ year5.addEventListener("change", function () {
   years[4] = Number(year5.value);
   updateValues();
 });
+
+// Dropdown Selectors
+let nav = document.querySelector(".calculator__dropdown__list");
+let divs = nav.getElementsByTagName("div");
+
+for (var i = 0; i < divs.length; i++) {
+  divs[i].addEventListener("click", function () {
+    let selectedValue = this.getAttribute("id");
+    if (selectedValue) {
+      nftValue = Number(selectedValue);
+      baseStake = nftValue / ulx;
+      calculatePercentageGrowth();
+      updateValues();
+    }
+  });
+}
