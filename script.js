@@ -147,20 +147,26 @@ let calculateGrowth = (baseStake, years) => {
   const multipliers = [0.002, 0.001, 0.0005, 0.00025, 0.000125];
 
   for (let i = 0; i < years.length; i++) {
-    if (
-      typeof years[i] === "number" &&
-      Number.isInteger(years[i]) &&
-      years[i] > 0
-    ) {
-      let year = years[i];
-      if (i === 2) {
-        year = years[i] + 2;
-      } else if (i == 4) {
-        year = years[i] + 1;
+    let year = 365;
+    let stakeYear = years[i];
+    // Leap year adjustment
+    if (i === 2) {
+        if (years[i] > 59) {
+            stakeYear = years[i] + 2;
+        }
+        year = year + 2;
+    }
+    // Leap year adjustment
+    if (i === 4) {
+      if (years[i] > 59) {
+        stakeYear = years[i] + 1;
       }
-      for (let day = 1; day <= year; day++) {
-        sum += sum * multipliers[i];
-      }
+    }
+    for (let day = 1; day <= stakeYear; day++) {
+      sum += sum * multipliers[i];
+    }
+    for (let day = 1; day <= year - stakeYear; day++) {
+      sum += (multipliers[i] * baseStake) / 2;
     }
   }
   return sum.toFixed(2);
