@@ -124,7 +124,7 @@ addEventListener("DOMContentLoaded", () => {
   });
 });
 
-//Sliders
+//Slider's Selectors
 const year1 = document.querySelector(
   ".rangeslider__value.is--year-1.is--visible.w-input"
 );
@@ -133,7 +133,7 @@ const year3 = document.querySelector(".rangeslider__value.is--year-3");
 const year4 = document.querySelector(".rangeslider__value.is--year-4");
 const year5 = document.querySelector(".rangeslider__value.is--year-5");
 
-// Fields
+// Field's Selectors
 const displayGrowthUlxPercent = document.querySelector(
   ".calculator__col.is--right .growth-ulx-percent"
 );
@@ -147,6 +147,7 @@ const displayGrowthUsdt = document.querySelector(
   ".calculator__col.is--right .growth-usdt"
 );
 
+// Constants
 let years = [
   Number(year1.value),
   Number(year2.value),
@@ -155,47 +156,49 @@ let years = [
   Number(year5.value),
 ];
 
-const updateValues = () => {
-  const nftValue = 5000;
-  const usdt = 0.1;
-  const ulx = 0.1;
-  const baseStake = nftValue / ulx;
+let nftValue = 5000;
+const usdt = 0.1;
+const ulx = 0.1;
+const baseStake = nftValue / ulx;
 
-  let growthUlx = (baseStake, years) => {
-    let sum = baseStake;
-    const multipliers = [0.002, 0.001, 0.0005, 0.00025, 0.000125];
+// Function to calculate total growth.
+let calculateGrowth = (baseStake, years) => {
+  let sum = baseStake;
+  const multipliers = [0.002, 0.001, 0.0005, 0.00025, 0.000125];
 
-    for (let i = 0; i < years.length; i++) {
-      if (
-        typeof years[i] === "number" &&
-        Number.isInteger(years[i]) &&
-        years[i] > 0
-      ) {
-        let year = years[i];
-        if (i === 2) {
-          year = years[i] + 2;
-        } else if (i == 4) {
-          year = years[i] + 1;
-        }
-        for (let day = 1; day <= year; day++) {
-          sum += sum * multipliers[i];
-        }
+  for (let i = 0; i < years.length; i++) {
+    if (
+      typeof years[i] === "number" &&
+      Number.isInteger(years[i]) &&
+      years[i] > 0
+    ) {
+      let year = years[i];
+      if (i === 2) {
+        year = years[i] + 2;
+      } else if (i == 4) {
+        year = years[i] + 1;
+      }
+      for (let day = 1; day <= year; day++) {
+        sum += sum * multipliers[i];
       }
     }
-    return sum.toFixed(2);
-  };
-
-  let growthUlxPercentage = (
-    (growthUlx(baseStake, years) / baseStake - 1) *
-    100
-  ).toFixed(2);
-
-  displayGrowthUlx.textContent = growthUlx(baseStake, years);
-  displayGrowthUsdt.textContent = growthUlx(nftValue, years);
-  displayGrowthUlxPercent.textContent = growthUlxPercentage;
-  displayGrowthUsdtPercent.textContent = growthUlxPercentage;
+  }
+  return sum.toFixed(2);
 };
 
+// Function to calculate percentage of growth.
+let calculatePercentageGrowth = () =>
+  ((calculateGrowth(baseStake, years) / baseStake - 1) * 100).toFixed(2);
+
+// Function to update shown values when inputs changes.
+const updateValues = () => {
+  displayGrowthUlx.textContent = calculateGrowth(baseStake, years);
+  displayGrowthUsdt.textContent = calculateGrowth(nftValue, years);
+  displayGrowthUlxPercent.textContent = calculatePercentageGrowth();
+  displayGrowthUsdtPercent.textContent = calculatePercentageGrowth();
+};
+
+// Slider's Event Listeners
 year1.addEventListener("change", function () {
   years[0] = Number(year1.value);
   updateValues();
