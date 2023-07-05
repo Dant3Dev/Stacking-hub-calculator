@@ -143,57 +143,57 @@ const displayGrowthUlx = document.querySelector(
 const displayGrowthUsdtPercent = document.querySelector(
   ".calculator__col.is--right .growth-usdt-percent"
 );
-const displayGrowthUdtPercent = document.querySelector(
+const displayGrowthUsdt = document.querySelector(
   ".calculator__col.is--right .growth-usdt"
 );
 
-let years = [year1.value, year2.value, year3.value, year4.value, year5.value];
+let years = [
+  Number(year1.value),
+  Number(year2.value),
+  Number(year3.value),
+  Number(year4.value),
+  Number(year5.value),
+];
 
 const updateValues = () => {
-  const nftValue = 30000;
+  const nftValue = 5000;
   const usdt = 0.1;
   const ulx = 0.1;
   const baseStake = nftValue / ulx;
-  let totalDays = years[0] + years[1] + years[2] + years[3] + years[4];
 
-  let interestInFiveYears =
-    years[0] * 0.002 +
-    years[1] * 0.001 +
-    years[2] * 0.0005 +
-    years[3] * 0.00025 +
-    years[4] * 0.000125;
-
-  let growthUlx = (baseStake, totalDays) => {
-    const years = Math.floor(totalDays / 365);
-    const multipliers = [0.002, 0.001, 0.0005, 0.00025, 0.000125].slice(
-      0,
-      years + 1
-    );
+  let growthUlx = (baseStake, years) => {
     let sum = baseStake;
+    const multipliers = [0.002, 0.001, 0.0005, 0.00025, 0.000125];
 
-    for (let year = 1; year <= years; year++) {
-      for (let day = 1; day <= 365; day++) {
-        sum += sum * multipliers[year - 1];
+    for (let i = 0; i < years.length; i++) {
+      if (
+        typeof years[i] === "number" &&
+        Number.isInteger(years[i]) &&
+        years[i] > 0
+      ) {
+        let year = years[i];
+        if (i === 2) {
+          year = years[i] + 2;
+        } else if (i == 4) {
+          year = years[i] + 1;
+        }
+        for (let day = 1; day <= year; day++) {
+          sum += sum * multipliers[i];
+        }
       }
     }
-
-    if (totalDays % 365 !== 0) {
-      const remainingDays = totalDays % 365;
-      for (let day = 1; day <= remainingDays; day++) {
-        sum += sum * multipliers[years];
-      }
-    }
-    console.log(sum.toFixed(2));
     return sum.toFixed(2);
   };
 
   let growthUlxPercentage = (
-    (growthUlx(baseStake, totalDays) / baseStake - 1) *
+    (growthUlx(baseStake, years) / baseStake - 1) *
     100
   ).toFixed(2);
 
-  displayGrowthUlx.textContent = growthUlx(baseStake, totalDays);
+  displayGrowthUlx.textContent = growthUlx(baseStake, years);
+  displayGrowthUsdt.textContent = growthUlx(nftValue, years);
   displayGrowthUlxPercent.textContent = growthUlxPercentage;
+  displayGrowthUsdtPercent.textContent = growthUlxPercentage;
 };
 
 year1.addEventListener("change", function () {
