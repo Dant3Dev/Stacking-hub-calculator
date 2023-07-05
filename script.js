@@ -123,6 +123,10 @@ const displayGrowthUsdt = document.querySelector(
   ".calculator__col.is--right .growth-usdt"
 );
 
+// Dropdown Selectors
+let nav = document.querySelector(".calculator__dropdown__list");
+let divs = nav.getElementsByTagName("div");
+
 // Constants
 let years = [
   Number(year1.value),
@@ -168,13 +172,15 @@ let calculatePercentageGrowth = () =>
 
 // Function to update shown values when inputs changes.
 const updateValues = () => {
+  baseStake = nftValue / ulx;
+  calculatePercentageGrowth();
   displayGrowthUlx.textContent = calculateGrowth(baseStake, years);
   displayGrowthUsdt.textContent = calculateGrowth(nftValue, years);
   displayGrowthUlxPercent.textContent = calculatePercentageGrowth();
   displayGrowthUsdtPercent.textContent = calculatePercentageGrowth();
 };
 
-// Slider's Event Listeners
+// Slider's event Listeners
 year1.addEventListener("change", function () {
   years[0] = Number(year1.value);
   updateValues();
@@ -200,17 +206,12 @@ year5.addEventListener("change", function () {
   updateValues();
 });
 
-// Dropdown Selectors
-let nav = document.querySelector(".calculator__dropdown__list");
-let divs = nav.getElementsByTagName("div");
-
+// DropDown event listeners for each option
 for (var i = 0; i < divs.length; i++) {
   divs[i].addEventListener("click", function () {
     let selectedValue = this.getAttribute("id");
     if (selectedValue) {
       nftValue = Number(selectedValue);
-      baseStake = nftValue / ulx;
-      calculatePercentageGrowth();
       updateValues();
     }
   });
