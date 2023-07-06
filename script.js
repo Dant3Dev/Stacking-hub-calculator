@@ -195,26 +195,31 @@ addEventListener("DOMContentLoaded", () => {
   year1.addEventListener("change", () => {
     years[0] = Number(year1.value);
     updateValues();
+    updateChart();
   });
 
   year2.addEventListener("change", () => {
     years[1] = Number(year2.value);
     updateValues();
+    updateChart();
   });
 
   year3.addEventListener("change", () => {
     years[2] = Number(year3.value);
     updateValues();
+    updateChart();
   });
 
   year4.addEventListener("change", () => {
     years[3] = Number(year4.value);
     updateValues();
+    updateChart();
   });
 
   year5.addEventListener("change", () => {
     years[4] = Number(year5.value);
     updateValues();
+    updateChart();
   });
 
   // DropDown event listeners for each option
@@ -241,32 +246,32 @@ addEventListener("DOMContentLoaded", () => {
     /// Compute every year one by one to get data for the chart
     const y1 = calculateYearlyGrowth(
       initialStake,
-      years[0],
+      0,
       multipliers[0],
       0,
       true
     );
     const y2 = calculateYearlyGrowth(
       y1.totalStake,
-      years[1],
+      0,
       multipliers[1],
       y1.withdrawSum
     );
     const y3 = calculateYearlyGrowth(
       y2.totalStake,
-      years[2],
+      0,
       multipliers[2],
       y2.withdrawSum
     );
     const y4 = calculateYearlyGrowth(
       y3.totalStake,
-      years[3],
+      0,
       multipliers[3],
       y3.withdrawSum
     );
     const y5 = calculateYearlyGrowth(
       y4.totalStake,
-      years[4],
+      0,
       multipliers[4],
       y4.withdrawSum,
       true
@@ -312,10 +317,47 @@ addEventListener("DOMContentLoaded", () => {
     return [0, y1.ulxEnd, y2.ulxEnd, y3.ulxEnd, y4.ulxEnd, y5.ulxEnd];
   };
 
-  let newGraph = [0, 0, 0, 0, 0, 0];
+  let newGraph = (
+    newYears = [year1.value, year2.value, year3.value, year4.value, year5.value]
+  ) => {
+    const initialStake = nftValue / ulxMarketPrice;
+    /// Compute every year one by one to get data for the chart
+    const y1 = calculateYearlyGrowth(
+      initialStake,
+      newYears[0],
+      multipliers[0],
+      0,
+      true
+    );
+    const y2 = calculateYearlyGrowth(
+      y1.totalStake,
+      newYears[1],
+      multipliers[1],
+      y1.withdrawSum
+    );
+    const y3 = calculateYearlyGrowth(
+      y2.totalStake,
+      newYears[2],
+      multipliers[2],
+      y2.withdrawSum
+    );
+    const y4 = calculateYearlyGrowth(
+      y3.totalStake,
+      newYears[3],
+      multipliers[3],
+      y3.withdrawSum
+    );
+    const y5 = calculateYearlyGrowth(
+      y4.totalStake,
+      newYears[4],
+      multipliers[4],
+      y4.withdrawSum,
+      true
+    );
+    return [0, y1.ulxEnd, y2.ulxEnd, y3.ulxEnd, y4.ulxEnd, y5.ulxEnd];
+  };
 
-  const curveData = [onGraph(), offGraph(), newGraph];
-  const newData = () => [onGraph, offGraph, newGraph];
+  const curveData = [onGraph(), offGraph(), offGraph()];
   const greenGradient = ["#1FFFA3", "#408782"];
   const redGradient = ["#F29191", "#F5477B"];
   const activeGradient = ["#3BB5FF", "#264794"];
@@ -376,21 +418,23 @@ addEventListener("DOMContentLoaded", () => {
   });
   // Function to update the dataset and redraw the chart
   const updateChart = () => {
-    myChart.data.datasets = newData().map((data, index) => ({
-      data: data,
-      backgroundColor:
-        index === 2
-          ? createGradient(ctx, "#c3ffea", "rgba(255, 255, 255, 0.5)")
-          : "transparent",
-      fill: index === 2 ? "origin" : "-1",
-      borderColor: createGradient(
-        ctx,
-        [redGradient[0], activeGradient[0], greenGradient[0]][index],
-        [redGradient[1], activeGradient[1], greenGradient[1]][index]
-      ),
-      borderWidth: 2,
-      lineTension: 0.6,
-    }));
+    myChart.data.datasets = [onGraph(), offGraph(), newGraph()].map(
+      (data, index) => ({
+        data: data,
+        backgroundColor:
+          index === 2
+            ? createGradient(ctx, "#c3ffea", "rgba(255, 255, 255, 0.5)")
+            : "transparent",
+        fill: index === 2 ? "origin" : "-1",
+        borderColor: createGradient(
+          ctx,
+          [redGradient[0], activeGradient[0], greenGradient[0]][index],
+          [redGradient[1], activeGradient[1], greenGradient[1]][index]
+        ),
+        borderWidth: 2,
+        lineTension: 0.6,
+      })
+    );
     myChart.update();
   };
 });
