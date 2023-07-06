@@ -386,6 +386,8 @@ addEventListener("DOMContentLoaded", () => {
       })),
     },
     options: {
+      responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           //display: false,
@@ -435,4 +437,8 @@ addEventListener("DOMContentLoaded", () => {
     );
     myChart.update();
   };
+
 });
+// Style
+const canvasWrapper = document.querySelector(".calculator__canvas-embed");
+canvasWrapper.style.height = "42%";
