@@ -229,6 +229,7 @@ addEventListener("DOMContentLoaded", () => {
       if (selectedValue) {
         nftValue = Number(selectedValue);
         updateValues();
+        updateChart();
       }
     });
   }
@@ -237,6 +238,7 @@ addEventListener("DOMContentLoaded", () => {
   ulxInput.addEventListener("input", (e) => {
     ulxMarketPrice = Number(e.target.value);
     updateValues();
+    updateChart();
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -244,13 +246,7 @@ addEventListener("DOMContentLoaded", () => {
   const offGraph = () => {
     const initialStake = nftValue / ulxMarketPrice;
     /// Compute every year one by one to get data for the chart
-    const y1 = calculateYearlyGrowth(
-      initialStake,
-      0,
-      multipliers[0],
-      0,
-      true
-    );
+    const y1 = calculateYearlyGrowth(initialStake, 0, multipliers[0], 0, true);
     const y2 = calculateYearlyGrowth(
       y1.totalStake,
       0,
@@ -418,9 +414,11 @@ addEventListener("DOMContentLoaded", () => {
   });
   // Function to update the dataset and redraw the chart
   const updateChart = () => {
+    const labels = ["Auto stake On", "Auto stake OFF", "Selection"];
     myChart.data.datasets = [onGraph(), offGraph(), newGraph()].map(
       (data, index) => ({
         data: data,
+        label: labels[index],
         backgroundColor:
           index === 2
             ? createGradient(ctx, "#c3ffea", "rgba(255, 255, 255, 0.5)")
