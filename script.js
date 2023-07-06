@@ -127,6 +127,9 @@ const displayGrowthUsdt = document.querySelector(
 let nav = document.querySelector(".calculator__dropdown__list");
 let divs = nav.getElementsByTagName("div");
 
+// ULX input Selector
+const ulxInput = document.getElementById("field-7");
+
 // Constants
 let years = [
   Number(year1.value),
@@ -137,8 +140,7 @@ let years = [
 ];
 
 let nftValue = 5000;
-const usdt = 0.1;
-const ulx = 0.1;
+let ulx = 0.1;
 let baseStake = nftValue / ulx;
 
 // Function to calculate total growth.
@@ -151,10 +153,10 @@ let calculateGrowth = (baseStake, years) => {
     let stakeYear = years[i];
     // Leap year adjustment
     if (i === 2) {
-        if (years[i] > 59) {
-            stakeYear = years[i] + 2;
-        }
-        year = year + 2;
+      if (years[i] > 59) {
+        stakeYear = years[i] + 2;
+      }
+      year = year + 2;
     }
     // Leap year adjustment
     if (i === 4) {
@@ -178,43 +180,51 @@ let calculatePercentageGrowth = () =>
 
 // Function to update shown values when inputs changes.
 const updateValues = () => {
-  baseStake = nftValue / ulx;
   calculatePercentageGrowth();
-  displayGrowthUlx.textContent = calculateGrowth(baseStake, years);
-  displayGrowthUsdt.textContent = calculateGrowth(nftValue, years);
-  displayGrowthUlxPercent.textContent = calculatePercentageGrowth();
-  displayGrowthUsdtPercent.textContent = calculatePercentageGrowth();
+  if (typeof ulx === "number" && ulx > 0) {
+    displayGrowthUsdt.textContent = calculateGrowth(nftValue, years);
+    baseStake = nftValue / ulx;
+    displayGrowthUlx.textContent = calculateGrowth(baseStake, years);
+    displayGrowthUlxPercent.textContent = calculatePercentageGrowth();
+    displayGrowthUsdtPercent.textContent = calculatePercentageGrowth();
+  } else {
+    displayGrowthUsdt.textContent = 0;
+    baseStake = 0;
+    displayGrowthUlx.textContent = 0;
+    displayGrowthUlxPercent.textContent = 0;
+    displayGrowthUsdtPercent.textContent = 0;
+  }
 };
 
 // Slider's event Listeners
-year1.addEventListener("change", function () {
+year1.addEventListener("change", () => {
   years[0] = Number(year1.value);
   updateValues();
 });
 
-year2.addEventListener("change", function () {
+year2.addEventListener("change", () => {
   years[1] = Number(year2.value);
   updateValues();
 });
 
-year3.addEventListener("change", function () {
+year3.addEventListener("change", () => {
   years[2] = Number(year3.value);
   updateValues();
 });
 
-year4.addEventListener("change", function () {
+year4.addEventListener("change", () => {
   years[3] = Number(year4.value);
   updateValues();
 });
 
-year5.addEventListener("change", function () {
+year5.addEventListener("change", () => {
   years[4] = Number(year5.value);
   updateValues();
 });
 
 // DropDown event listeners for each option
 for (var i = 0; i < divs.length; i++) {
-  divs[i].addEventListener("click", function () {
+  divs[i].addEventListener("click", () => {
     let selectedValue = this.getAttribute("id");
     if (selectedValue) {
       nftValue = Number(selectedValue);
@@ -222,3 +232,9 @@ for (var i = 0; i < divs.length; i++) {
     }
   });
 }
+
+// ULX input event listener
+ulxInput.addEventListener("input", (e) => {
+  ulx = e.target.value;
+  updateValues();
+});
