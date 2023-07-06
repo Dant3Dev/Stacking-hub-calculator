@@ -235,57 +235,86 @@ addEventListener("DOMContentLoaded", () => {
   });
 
   ////////////////////////////////////////////////////////////////////
-  const offGraph = [
-    calculateGrowth(baseStake, []),
-    calculateGrowth(baseStake, [0]),
-    calculateGrowth(baseStake, [0, 0]),
-    calculateGrowth(baseStake, [0, 0, 0]),
-    calculateGrowth(baseStake, [0, 0, 0, 0]),
-    calculateGrowth(baseStake, [0, 0, 0, 0, 0]),
-  ];
-  const onGraph = [
-    calculateGrowth(baseStake, [0, 0, 0, 0, 0]),
-    calculateGrowth(baseStake, [365, 0, 0, 0, 0]),
-    calculateGrowth(baseStake, [365, 365, 0, 0, 0]),
-    calculateGrowth(baseStake, [365, 365, 365, 0, 0]),
-    calculateGrowth(baseStake, [365, 365, 365, 365, 0]),
-    calculateGrowth(baseStake, [365, 365, 365, 365, 365]),
-  ];
 
-  let newGraph = [
-    calculateGrowth(baseStake, []),
-    calculateGrowth(baseStake, [Number(year1.value), 0, 0, 0, 0]),
-    calculateGrowth(baseStake, [
-      Number(year1.value),
-      Number(year2.value),
+  const offGraph = () => {
+    const initialStake = nftValue / ulxMarketPrice;
+    /// Compute every year one by one to get data for the chart
+    const y1 = calculateYearlyGrowth(
+      initialStake,
+      years[0],
+      multipliers[0],
       0,
-      0,
-      0,
-    ]),
-    calculateGrowth(baseStake, [
-      Number(year1.value),
-      Number(year2.value),
-      Number(year3.value),
-      0,
-      0,
-    ]),
-    calculateGrowth(baseStake, [
-      Number(year1.value),
-      Number(year2.value),
-      Number(year3.value),
-      Number(year4.value),
-      0,
-    ]),
-    calculateGrowth(baseStake, [
-      Number(year1.value),
-      Number(year2.value),
-      Number(year3.value),
-      Number(year4.value),
-      Number(year5.value),
-    ]),
-  ];
+      true
+    );
+    const y2 = calculateYearlyGrowth(
+      y1.totalStake,
+      years[1],
+      multipliers[1],
+      y1.withdrawSum
+    );
+    const y3 = calculateYearlyGrowth(
+      y2.totalStake,
+      years[2],
+      multipliers[2],
+      y2.withdrawSum
+    );
+    const y4 = calculateYearlyGrowth(
+      y3.totalStake,
+      years[3],
+      multipliers[3],
+      y3.withdrawSum
+    );
+    const y5 = calculateYearlyGrowth(
+      y4.totalStake,
+      years[4],
+      multipliers[4],
+      y4.withdrawSum,
+      true
+    );
+    return [0, y1.ulxEnd, y2.ulxEnd, y3.ulxEnd, y4.ulxEnd, y5.ulxEnd];
+  };
 
-  const curveData = [onGraph, offGraph, newGraph];
+  const onGraph = () => {
+    const initialStake = nftValue / ulxMarketPrice;
+    /// Compute every year one by one to get data for the chart
+    const y1 = calculateYearlyGrowth(
+      initialStake,
+      365,
+      multipliers[0],
+      0,
+      true
+    );
+    const y2 = calculateYearlyGrowth(
+      y1.totalStake,
+      365,
+      multipliers[1],
+      y1.withdrawSum
+    );
+    const y3 = calculateYearlyGrowth(
+      y2.totalStake,
+      365,
+      multipliers[2],
+      y2.withdrawSum
+    );
+    const y4 = calculateYearlyGrowth(
+      y3.totalStake,
+      365,
+      multipliers[3],
+      y3.withdrawSum
+    );
+    const y5 = calculateYearlyGrowth(
+      y4.totalStake,
+      365,
+      multipliers[4],
+      y4.withdrawSum,
+      true
+    );
+    return [0, y1.ulxEnd, y2.ulxEnd, y3.ulxEnd, y4.ulxEnd, y5.ulxEnd];
+  };
+
+  let newGraph = [0, 0, 0, 0, 0, 0];
+
+  const curveData = [onGraph(), offGraph(), newGraph];
   const newData = () => [onGraph, offGraph, newGraph];
   const greenGradient = ["#1FFFA3", "#408782"];
   const redGradient = ["#F29191", "#F5477B"];
