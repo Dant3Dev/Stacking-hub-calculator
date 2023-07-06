@@ -77,6 +77,7 @@ addEventListener("DOMContentLoaded", () => {
     const multipliers = [0.002, 0.001, 0.0005, 0.00025, 0.000125];
 
     for (let i = 0; i < years.length; i++) {
+      let baseMultiplier = baseStake * multipliers[i];
       let year = 365;
       let stakeYear = years[i];
       // Leap year adjustment
@@ -94,9 +95,10 @@ addEventListener("DOMContentLoaded", () => {
       }
       for (let day = 1; day <= stakeYear; day++) {
         sum += sum * multipliers[i];
+        baseMultiplier = sum * multipliers[i];
       }
-      for (let day = 1; day <= year - stakeYear; day++) {
-        sum += (multipliers[i] * baseStake) / 2;
+      for (let day = stakeYear + 1; day <= year; day++) {
+        sum += baseMultiplier / 2;
       }
     }
     return sum.toFixed(2);
@@ -128,6 +130,7 @@ addEventListener("DOMContentLoaded", () => {
   year1.addEventListener("change", () => {
     years[0] = Number(year1.value);
     updateValues();
+    updateChart();
   });
 
   year2.addEventListener("change", () => {
@@ -165,11 +168,10 @@ addEventListener("DOMContentLoaded", () => {
   ulxInput.addEventListener("input", (e) => {
     ulx = e.target.value;
     updateValues();
-    updateChart();
   });
 
   ////////////////////////////////////////////////////////////////////
-  const calculateOffGraph = [
+  const offGraph = [
     (displayGrowthUlx.textContent = calculateGrowth(baseStake, [])),
     (displayGrowthUlx.textContent = calculateGrowth(baseStake, [0])),
     (displayGrowthUlx.textContent = calculateGrowth(baseStake, [0, 0])),
@@ -180,7 +182,7 @@ addEventListener("DOMContentLoaded", () => {
       [0, 0, 0, 0, 0]
     )),
   ];
-  const calculateOnGraph = [
+  const onGraph = [
     (displayGrowthUlx.textContent = calculateGrowth(
       baseStake,
       [0, 0, 0, 0, 0]
@@ -206,12 +208,48 @@ addEventListener("DOMContentLoaded", () => {
       [365, 365, 365, 365, 365]
     )),
   ];
-  const curveData = [calculateOnGraph, calculateOffGraph, [0, 0, 0, 0, 0, 0]];
-  const newData = [
-    [0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0],
+
+  let newGraph = [
+    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [])),
+    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [
+      Number(year1.value),
+      0,
+      0,
+      0,
+      0,
+    ])),
+    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [
+      Number(year1.value),
+      Number(year2.value),
+      0,
+      0,
+      0,
+    ])),
+    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [
+      Number(year1.value),
+      Number(year2.value),
+      Number(year3.value),
+      0,
+      0,
+    ])),
+    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [
+      Number(year1.value),
+      Number(year2.value),
+      Number(year3.value),
+      Number(year4.value),
+      0,
+    ])),
+    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [
+      Number(year1.value),
+      Number(year2.value),
+      Number(year3.value),
+      Number(year4.value),
+      Number(year5.value),
+    ])),
   ];
+
+  const curveData = [onGraph, offGraph, newGraph];
+  const newData = () => [onGraph, offGraph, newGraph];
   const greenGradient = ["#1FFFA3", "#408782"];
   const redGradient = ["#F29191", "#F5477B"];
   const activeGradient = ["#3BB5FF", "#264794"];
@@ -272,7 +310,7 @@ addEventListener("DOMContentLoaded", () => {
   });
   // Function to update the dataset and redraw the chart
   const updateChart = () => {
-    myChart.data.datasets = newData.map((data, index) => ({
+    myChart.data.datasets = newData().map((data, index) => ({
       data: data,
       backgroundColor:
         index === 2
