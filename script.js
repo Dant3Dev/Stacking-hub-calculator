@@ -243,6 +243,8 @@ addEventListener("DOMContentLoaded", () => {
 
   ////////////////////////////////////////////////////////////////////
 
+  let flatFactor = 0.95; // flattenning factor
+
   const offGraph = () => {
     const initialStake = nftValue / ulxMarketPrice;
     /// Compute every year one by one to get data for the chart
@@ -272,7 +274,15 @@ addEventListener("DOMContentLoaded", () => {
       y4.withdrawSum,
       true
     );
-    return [0, y1.ulxEnd, y2.ulxEnd, y3.ulxEnd, y4.ulxEnd, y5.ulxEnd];
+
+    return [
+      0,
+      Math.pow(y1.ulxEnd, flatFactor),
+      Math.pow(y2.ulxEnd, flatFactor),
+      Math.pow(y3.ulxEnd, flatFactor),
+      Math.pow(y4.ulxEnd, flatFactor),
+      Math.pow(y5.ulxEnd, flatFactor),
+    ];
   };
 
   const onGraph = () => {
@@ -350,6 +360,19 @@ addEventListener("DOMContentLoaded", () => {
       y4.withdrawSum,
       true
     );
+    let yearsSum = newYears.reduce(function (acc, curr) {
+      return Number(acc + curr);
+    }, 0);
+    if (yearsSum <= 0) {
+      return [
+        0,
+        Math.pow(y1.ulxEnd, flatFactor),
+        Math.pow(y2.ulxEnd, flatFactor),
+        Math.pow(y3.ulxEnd, flatFactor),
+        Math.pow(y4.ulxEnd, flatFactor),
+        Math.pow(y5.ulxEnd, flatFactor),
+      ];
+    }
     return [0, y1.ulxEnd, y2.ulxEnd, y3.ulxEnd, y4.ulxEnd, y5.ulxEnd];
   };
 
@@ -437,8 +460,8 @@ addEventListener("DOMContentLoaded", () => {
     );
     myChart.update();
   };
-
 });
+
 // Style
 const canvasWrapper = document.querySelector(".calculator__canvas-embed");
-canvasWrapper.style.height = "42%";
+canvasWrapper.style.height = "40%";
