@@ -58,7 +58,115 @@ addEventListener("DOMContentLoaded", () => {
   // ULX input Selector
   const ulxInput = document.getElementById("field-7");
 
-  // Constants
+  let nftValue = 5000;
+  let ulxMarketPrice = 0.1;
+  let baseStake = nftValue / ulxMarketPrice;
+
+  /// Function to calculate individual year growth
+  let calculateYearlyGrowth = (
+    initialStake,
+    stakedDays,
+    multiplier,
+    withdrawOffset = 0,
+    leap = false
+  ) => {
+    /// Flag to switch autostake state
+    let autostake = stakedDays > 0 ? true : false;
+    /// Make calculations for the first day
+    let totalStake = initialStake;
+    let stakeRewards = autostake
+      ? Number((totalStake * multiplier).toFixed(2))
+      : 0;
+    let rewardsAmount = Number((totalStake * multiplier).toFixed(2));
+    let withdraw = autostake ? 0 : Number((rewardsAmount / 2).toFixed(2));
+    let withdrawSum = withdraw + withdrawOffset;
+    let ulxEnd = withdrawSum + totalStake;
+
+    /* console.log("Day 1")
+    console.log("StakeON", autostake)
+    console.log("Total Stake", totalStake)
+    console.log("Rewards ON", stakeRewards)
+    console.log("Rewards Amount", rewardsAmount)
+    console.log("Withdraw", withdraw)
+    console.log("Withdraw Sum", withdrawSum)
+    console.log("ULX End", ulxEnd)
+    console.log("============================") */
+
+    for (let day = 1; day < (leap ? 366 : 365); day++) {
+      /// When autostake is just turned off we still need compute once the new total stake for today
+      totalStake = autostake ? totalStake + rewardsAmount : totalStake;
+      /// Then we can mark autostake off if there's no more staked days
+      autostake = day < stakedDays;
+      stakeRewards = autostake
+        ? Number((totalStake * multiplier).toFixed(2))
+        : 0;
+      rewardsAmount = Number((totalStake * multiplier).toFixed(2));
+      withdraw = autostake ? 0 : Number((rewardsAmount / 2).toFixed(2));
+      withdrawSum = Number(withdrawSum + withdraw);
+      ulxEnd = Number(withdrawSum + totalStake);
+
+      /* console.log("Day", day + 1)
+      console.log("StakeON", autostake)
+      console.log("Total Stake", totalStake)
+      console.log("Rewards ON", stakeRewards)
+      console.log("Rewards Amount", rewardsAmount)
+      console.log("Withdraw", withdraw)
+      console.log("Withdraw Sum", withdrawSum)
+      console.log("ULX End", ulxEnd)
+      console.log("============================") */
+    }
+    return { ulxEnd, totalStake, withdrawSum };
+  };
+
+  const multipliers = [0.002, 0.001, 0.0005, 0.00025, 0.000125];
+
+  // Function to calculate growth.
+  let calculateGrowth = (nftValue, ulxMarketPrice, years) => {
+    const initialStake = nftValue / ulxMarketPrice;
+    /// Compute every year one by one to get data for the chart
+    const y1 = calculateYearlyGrowth(
+      initialStake,
+      years[0],
+      multipliers[0],
+      0,
+      true
+    );
+    const y2 = calculateYearlyGrowth(
+      y1.totalStake,
+      years[1],
+      multipliers[1],
+      y1.withdrawSum
+    );
+    const y3 = calculateYearlyGrowth(
+      y2.totalStake,
+      years[2],
+      multipliers[2],
+      y2.withdrawSum
+    );
+    const y4 = calculateYearlyGrowth(
+      y3.totalStake,
+      years[3],
+      multipliers[3],
+      y3.withdrawSum
+    );
+    const y5 = calculateYearlyGrowth(
+      y4.totalStake,
+      years[4],
+      multipliers[4],
+      y4.withdrawSum,
+      true
+    );
+    /// ==================================
+    /// Return the last year ulx calculations
+    return {
+      ulx: Number(y5.ulxEnd.toFixed(2)),
+      usdt: Number((y5.ulxEnd * ulxMarketPrice).toFixed(2)),
+      percentage: Number((y5.ulxEnd / initialStake - 1) * 100).toFixed(2),
+    };
+    /// ==================================
+    /// ==================================
+  };
+
   let years = [
     Number(year1.value),
     Number(year2.value),
@@ -67,59 +175,16 @@ addEventListener("DOMContentLoaded", () => {
     Number(year5.value),
   ];
 
-  let nftValue = 5000;
-  let ulx = 0.1;
-  let baseStake = nftValue / ulx;
-
-  // Function to calculate total growth.
-  let calculateGrowth = (baseStake, years) => {
-    let sum = baseStake;
-    const multipliers = [0.002, 0.001, 0.0005, 0.00025, 0.000125];
-
-    for (let i = 0; i < years.length; i++) {
-      let baseMultiplier = baseStake * multipliers[i];
-      let year = 365;
-      let stakeYear = years[i];
-      // Leap year adjustment
-      if (i === 2) {
-        if (years[i] > 59) {
-          stakeYear = years[i] + 2;
-        }
-        year = year + 2;
-      }
-      // Leap year adjustment
-      if (i === 4) {
-        if (years[i] > 59) {
-          stakeYear = years[i] + 1;
-        }
-      }
-      for (let day = 1; day <= stakeYear; day++) {
-        sum += sum * multipliers[i];
-        baseMultiplier = sum * multipliers[i];
-      }
-      for (let day = stakeYear + 1; day <= year; day++) {
-        sum += baseMultiplier / 2;
-      }
-    }
-    return sum.toFixed(2);
-  };
-
-  // Function to calculate percentage of growth.
-  let calculatePercentageGrowth = () =>
-    ((calculateGrowth(baseStake, years) / baseStake - 1) * 100).toFixed(2);
-
   // Function to update shown values when inputs changes.
   const updateValues = () => {
-    calculatePercentageGrowth();
-    if (typeof ulx === "number" && ulx > 0) {
-      displayGrowthUsdt.textContent = calculateGrowth(nftValue, years);
-      baseStake = nftValue / ulx;
-      displayGrowthUlx.textContent = calculateGrowth(baseStake, years);
-      displayGrowthUlxPercent.textContent = calculatePercentageGrowth();
-      displayGrowthUsdtPercent.textContent = calculatePercentageGrowth();
+    const result = calculateGrowth(nftValue, ulxMarketPrice, years);
+    if (typeof ulxMarketPrice === "number" && ulxMarketPrice > 0) {
+      displayGrowthUsdt.textContent = result.usdt;
+      displayGrowthUlx.textContent = result.ulx;
+      displayGrowthUlxPercent.textContent = result.percentage;
+      displayGrowthUsdtPercent.textContent = result.percentage;
     } else {
       displayGrowthUsdt.textContent = 0;
-      baseStake = 0;
       displayGrowthUlx.textContent = 0;
       displayGrowthUlxPercent.textContent = 0;
       displayGrowthUsdtPercent.textContent = 0;
@@ -130,7 +195,6 @@ addEventListener("DOMContentLoaded", () => {
   year1.addEventListener("change", () => {
     years[0] = Number(year1.value);
     updateValues();
-    updateChart();
   });
 
   year2.addEventListener("change", () => {
@@ -166,86 +230,59 @@ addEventListener("DOMContentLoaded", () => {
 
   // ULX input event listener
   ulxInput.addEventListener("input", (e) => {
-    ulx = e.target.value;
+    ulxMarketPrice = Number(e.target.value);
     updateValues();
   });
 
   ////////////////////////////////////////////////////////////////////
   const offGraph = [
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [])),
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [0])),
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [0, 0])),
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [0, 0, 0])),
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [0, 0, 0, 0])),
-    (displayGrowthUlx.textContent = calculateGrowth(
-      baseStake,
-      [0, 0, 0, 0, 0]
-    )),
+    calculateGrowth(baseStake, []),
+    calculateGrowth(baseStake, [0]),
+    calculateGrowth(baseStake, [0, 0]),
+    calculateGrowth(baseStake, [0, 0, 0]),
+    calculateGrowth(baseStake, [0, 0, 0, 0]),
+    calculateGrowth(baseStake, [0, 0, 0, 0, 0]),
   ];
   const onGraph = [
-    (displayGrowthUlx.textContent = calculateGrowth(
-      baseStake,
-      [0, 0, 0, 0, 0]
-    )),
-    (displayGrowthUlx.textContent = calculateGrowth(
-      baseStake,
-      [365, 0, 0, 0, 0]
-    )),
-    (displayGrowthUlx.textContent = calculateGrowth(
-      baseStake,
-      [365, 365, 0, 0, 0]
-    )),
-    (displayGrowthUlx.textContent = calculateGrowth(
-      baseStake,
-      [365, 365, 365, 0, 0]
-    )),
-    (displayGrowthUlx.textContent = calculateGrowth(
-      baseStake,
-      [365, 365, 365, 365, 0]
-    )),
-    (displayGrowthUlx.textContent = calculateGrowth(
-      baseStake,
-      [365, 365, 365, 365, 365]
-    )),
+    calculateGrowth(baseStake, [0, 0, 0, 0, 0]),
+    calculateGrowth(baseStake, [365, 0, 0, 0, 0]),
+    calculateGrowth(baseStake, [365, 365, 0, 0, 0]),
+    calculateGrowth(baseStake, [365, 365, 365, 0, 0]),
+    calculateGrowth(baseStake, [365, 365, 365, 365, 0]),
+    calculateGrowth(baseStake, [365, 365, 365, 365, 365]),
   ];
 
   let newGraph = [
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [])),
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [
-      Number(year1.value),
-      0,
-      0,
-      0,
-      0,
-    ])),
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [
+    calculateGrowth(baseStake, []),
+    calculateGrowth(baseStake, [Number(year1.value), 0, 0, 0, 0]),
+    calculateGrowth(baseStake, [
       Number(year1.value),
       Number(year2.value),
       0,
       0,
       0,
-    ])),
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [
+    ]),
+    calculateGrowth(baseStake, [
       Number(year1.value),
       Number(year2.value),
       Number(year3.value),
       0,
       0,
-    ])),
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [
+    ]),
+    calculateGrowth(baseStake, [
       Number(year1.value),
       Number(year2.value),
       Number(year3.value),
       Number(year4.value),
       0,
-    ])),
-    (displayGrowthUlx.textContent = calculateGrowth(baseStake, [
+    ]),
+    calculateGrowth(baseStake, [
       Number(year1.value),
       Number(year2.value),
       Number(year3.value),
       Number(year4.value),
       Number(year5.value),
-    ])),
+    ]),
   ];
 
   const curveData = [onGraph, offGraph, newGraph];
