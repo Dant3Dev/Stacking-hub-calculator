@@ -26,8 +26,7 @@ addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  ////////////////////////////////////////////////////////////////////
-
+  ////////////////////////////////////////////////////////////////////// Calcs
   //Slider's Selectors
   const year1 = document.querySelector(
     ".rangeslider__value.is--year-1.is--visible.w-input"
@@ -241,9 +240,10 @@ addEventListener("DOMContentLoaded", () => {
     updateChart();
   });
 
-  ////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////// Graph
 
-  let flatFactor = 0.95; // flattenning factor
+  // flattenning factor
+  // let flatFactor = 1;
 
   const offGraph = () => {
     const initialStake = nftValue / ulxMarketPrice;
@@ -276,12 +276,18 @@ addEventListener("DOMContentLoaded", () => {
     );
 
     return [
-      0,
-      Math.pow(y1.ulxEnd, flatFactor),
-      Math.pow(y2.ulxEnd, flatFactor),
-      Math.pow(y3.ulxEnd, flatFactor),
-      Math.pow(y4.ulxEnd, flatFactor),
-      Math.pow(y5.ulxEnd, flatFactor),
+      initialStake,
+      y1.ulxEnd,
+      y2.ulxEnd,
+      y3.ulxEnd,
+      y4.ulxEnd,
+      y5.ulxEnd,
+      // Math.pow(initialStake, flatFactor),
+      // Math.pow(y1.ulxEnd, flatFactor),
+      // Math.pow(y2.ulxEnd, flatFactor),
+      // Math.pow(y3.ulxEnd, flatFactor),
+      // Math.pow(y4.ulxEnd, flatFactor),
+      // Math.pow(y5.ulxEnd, flatFactor),
     ];
   };
 
@@ -320,7 +326,14 @@ addEventListener("DOMContentLoaded", () => {
       y4.withdrawSum,
       true
     );
-    return [0, y1.ulxEnd, y2.ulxEnd, y3.ulxEnd, y4.ulxEnd, y5.ulxEnd];
+    return [
+      initialStake,
+      y1.ulxEnd,
+      y2.ulxEnd,
+      y3.ulxEnd,
+      y4.ulxEnd,
+      y5.ulxEnd,
+    ];
   };
 
   let newGraph = (
@@ -360,20 +373,27 @@ addEventListener("DOMContentLoaded", () => {
       y4.withdrawSum,
       true
     );
-    let yearsSum = newYears.reduce(function (acc, curr) {
-      return Number(acc + curr);
-    }, 0);
-    if (yearsSum <= 0) {
-      return [
-        0,
-        Math.pow(y1.ulxEnd, flatFactor),
-        Math.pow(y2.ulxEnd, flatFactor),
-        Math.pow(y3.ulxEnd, flatFactor),
-        Math.pow(y4.ulxEnd, flatFactor),
-        Math.pow(y5.ulxEnd, flatFactor),
-      ];
-    }
-    return [0, y1.ulxEnd, y2.ulxEnd, y3.ulxEnd, y4.ulxEnd, y5.ulxEnd];
+    // let yearsSum = newYears.reduce(function (acc, curr) {
+    //   return Number(acc + curr);
+    // }, 0);
+    // if (yearsSum <= 0) {
+    //   return [
+    //     Math.pow(initialStake, flatFactor),
+    //     Math.pow(y1.ulxEnd, flatFactor),
+    //     Math.pow(y2.ulxEnd, flatFactor),
+    //     Math.pow(y3.ulxEnd, flatFactor),
+    //     Math.pow(y4.ulxEnd, flatFactor),
+    //     Math.pow(y5.ulxEnd, flatFactor),
+    //   ];
+    // }
+    return [
+      initialStake,
+      y1.ulxEnd,
+      y2.ulxEnd,
+      y3.ulxEnd,
+      y4.ulxEnd,
+      y5.ulxEnd,
+    ];
   };
 
   const curveData = [onGraph(), offGraph(), offGraph()];
@@ -462,6 +482,6 @@ addEventListener("DOMContentLoaded", () => {
   };
 });
 
-// Style
+////////////////////////////////////////////////////////////////////// Style
 const canvasWrapper = document.querySelector(".calculator__canvas-embed");
 canvasWrapper.style.height = "40%";
